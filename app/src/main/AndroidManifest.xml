@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.virjar.ratel.virtuallocation">
+
+    <!-- 这个权限用于进行网络定位 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- 这个权限用于访问GPS定位 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- 用于访问wifi网络信息，wifi信息会用于进行网络定位 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- 获取网络状态，根据网络状态切换进行数据请求网络转换 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- 访问网络，进行地图相关业务数据请求，包括地图数据，路线规划，POI检索等 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        tools:replace="android:theme"
+        android:name="top.littlerich.virtuallocation.common.AppApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/logo_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true"/>
+
+        <!-- 模块描述 -->
+        <meta-data
+            android:name="xposeddescription"
+            android:value="平头哥框架的虚拟定位"/>
+
+        <!-- XposedBridgeApi的最低版本号 -->
+        <meta-data
+            android:name="xposedminversion"
+            android:value="54"/>
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="2y88wkskaOi5fG6dM00DNgYyHtmxhhXo"/>
+
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote">
+        </service>
+
+        <activity android:name="top.littlerich.virtuallocation.activity.MainActivity"
+            android:screenOrientation="portrait"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name="top.littlerich.virtuallocation.activity.AboutActivity">
+        </activity>
+        <activity android:name="top.littlerich.virtuallocation.activity.PreciseLocationActivity">
+        </activity>
+        <activity android:name="top.littlerich.virtuallocation.activity.AppsActivity">
+        </activity>
+
+        <activity android:name="com.lljjcoder.style.citylist.CityListSelectActivity"/>
+        <provider
+            android:name="top.littlerich.virtuallocation.service.GPSContentProvider"
+            android:authorities="com.virjar.ratel.virtuallocation"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            tools:ignore="ExportedContentProvider" />
+    </application>
+
+</manifest>

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">筋斗云</string>
+    <string name="app_introduce">   筋斗云是一款虚拟定位软件，让你随心所欲的改变手机地理位置！本项目改造自:https://github.com/littleRich/VirtualLocation </string>
+    <string name="app_version_copyright">当前版本：1.0.0(build 20200827) \n@2017 ratel.virjar.com All right reserved</string>
+    <string name="item_application_name">应用程序名</string>
+    <string name="poi_sample_name">中国石化加油站(建材城西路站)</string>
+    <string name="poi_sample_addr">北京市海淀区建材城西路2号</string>
+    <string name="poi_sample_latlng">40.06174453910131,116.36035663970246</string>
+</resources>
