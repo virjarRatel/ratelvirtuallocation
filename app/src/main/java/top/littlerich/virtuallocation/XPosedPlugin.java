@@ -52,6 +52,7 @@ public class XPosedPlugin implements IRposedHookLoadPackage {
         handleGaoDeMap();
         handleBaiduMap();
         handleTencent();
+        handleqywxTencent();
         handleOriginal();
 
         Log.i(TAG, "virtual location component init success!!");
@@ -266,6 +267,151 @@ public class XPosedPlugin implements IRposedHookLoadPackage {
                 RposedHelpers.findAndHookMethod(clazz,
                         "removeUpdates",
                         "com.tencent.map.geolocation.TencentLocationListener",
+                        new RC_MethodHook() {
+                            @Override
+                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                Object fakeListener = listenerMap.get(param.args[0]);
+                                if (fakeListener != null) {
+                                    param.args[0] = fakeListener;
+                                }
+                            }
+                        }
+                );
+            }
+        });
+    }
+
+    private static void handleqywxTencent() {
+
+        ClassLoadMonitor.addClassLoadMonitor(new ClassLoadMonitor.OnClassLoader() {
+            @Override
+            public void onClassLoad(Class<?> clazz) {
+                if (clazz.getName().contains("location")) {
+                    Log.i(AppApplication.tag, "init class: " + clazz.getName());
+                }
+            }
+        });
+
+        //com.tencent.map.geolocation.TencentLocationManager
+        //com.tencent.map.geolocation.TencentLocationListener
+        ClassLoadMonitor.addClassLoadMonitor("com.tencent.map.qywxgeolocation.TencentLocationManager", new ClassLoadMonitor.OnClassLoader() {
+            @Override
+            public void onClassLoad(final Class<?> clazz) {
+                Log.i(AppApplication.tag, "命中企业微信腾讯API:" + clazz);
+                hasMapApi = true;
+                // public final int requestLocationUpdates(TencentLocationRequest var1, TencentLocationListener var2) {
+                // public final int requestLocationUpdates(TencentLocationRequest var1, TencentLocationListener var2, Looper var3) {
+                //public final int requestSingleFreshLocation(TencentLocationRequest var1, TencentLocationListener var2, Looper var3) {
+                //public final void removeUpdates(TencentLocationListener var1) {
+
+                final Map<Object, Object> listenerMap = new ConcurrentHashMap<>();
+
+                RC_MethodHook replaceLocationListenerHook = new RC_MethodHook() {
+
+                    private Object produceTencentLocation(final Object tencentLocation, Class<?> TencentLocationClass) throws IOException {
+//                        Class<?> TencentLocationClass = tencentLocation.getClass();
+                        InvocationHandler invocationHandler = new InvocationHandler() {
+                            @Override
+                            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                                if (method.getName().equals("getLatitude")) {
+                                    return AppApplication.mockGPS.mLatitude;
+                                } else if (method.getName().equals("getLongitude")) {
+                                    return AppApplication.mockGPS.mLongitude;
+                                } else if (method.getName().equals("getAddress")) {
+                                    return AppApplication.mockGPS.address;
+                                }
+                                if (args == null) {
+                                    return RposedHelpers.callMethod(tencentLocation, method.getName());
+                                } else {
+                                    return RposedHelpers.callMethod(tencentLocation, method.getName(), args);
+                                }
+                            }
+                        };
+
+                        Object fakeTencentLocation;
+                        if (TencentLocationClass.isInterface()) {
+                            fakeTencentLocation = Proxy.newProxyInstance(TencentLocationClass.getClassLoader(),
+                                    new Class[]{TencentLocationClass}, invocationHandler
+                            );
+                        } else {
+                            fakeTencentLocation = RatelToolKit.dexMakerProxyBuilderHelper
+                                    .forClass(TencentLocationClass)
+                                    .parentClassLoader(TencentLocationClass.getClassLoader())
+                                    .onlyMethods(TencentLocationClass.getDeclaredMethods())
+                                    .handler(invocationHandler).build();
+                        }
+
+                        return fakeTencentLocation;
+                    }
+
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+                        //com.tencent.map.geolocation.TencentLocationListener
+                        for (int i = 0; i < param.args.length; i++) {
+                            Class<?> tencentLocationListenerSubclass = param.args[i].getClass();
+                            Class<?> TencentLocationListenerClass = RposedHelpers.findClass("com.tencent.map.qywxgeolocation.TencentLocationListener", clazz.getClassLoader());
+
+                            if (!TencentLocationListenerClass.isAssignableFrom(tencentLocationListenerSubclass)) {
+                                continue;
+                            }
+                            final Object originListener = param.args[i];
+                            if (originListener == null) {
+                                return;
+                            }
+                            InvocationHandler invocationHandler = new InvocationHandler() {
+                                @Override
+                                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                                    // Debug.waitForDebugger();
+
+                                    if (method.getName().equals("onLocationChanged")) {
+                                        Class<?> TencentLocationClass = RposedHelpers.findClass("com.tencent.map.qywxgeolocation.TencentLocation", clazz.getClassLoader());
+                                        // void onLocationChanged(com.tencent.map.geolocation.TencentLocation var1);
+                                        for (int j = 0; j < args.length; j++) {
+                                            Object tencentLocation = args[j];
+                                            if (!TencentLocationClass.isAssignableFrom(args[j].getClass())) {
+                                                continue;
+                                            }
+
+                                            args[j] = produceTencentLocation(tencentLocation, TencentLocationClass);
+                                            break;
+                                        }
+                                    }
+                                    if (args == null) {
+                                        return RposedHelpers.callMethod(originListener, method.getName());
+                                    } else {
+                                        return RposedHelpers.callMethod(originListener, method.getName(), args);
+                                    }
+
+                                }
+                            };
+                            Object proxyListener;
+                            if (TencentLocationListenerClass.isInterface()) {
+                                proxyListener = Proxy.newProxyInstance(TencentLocationListenerClass.getClassLoader(),
+                                        new Class[]{TencentLocationListenerClass}, invocationHandler
+                                );
+                            } else {
+                                proxyListener = RatelToolKit.dexMakerProxyBuilderHelper
+                                        .forClass(tencentLocationListenerSubclass)
+                                        .parentClassLoader(tencentLocationListenerSubclass.getClassLoader())
+                                        .onlyMethods(tencentLocationListenerSubclass.getDeclaredMethods())
+                                        .handler(invocationHandler).build();
+                            }
+
+                            listenerMap.put(param.args[i], proxyListener);
+                            param.args[i] = proxyListener;
+                            break;
+                        }
+                    }
+                };
+
+                RposedBridge.hookAllMethods(clazz, "requestLocationUpdates", replaceLocationListenerHook);
+                RposedBridge.hookAllMethods(clazz, "requestSingleFreshLocation", replaceLocationListenerHook);
+
+
+                RposedHelpers.findAndHookMethod(clazz,
+                        "removeUpdates",
+                        "com.tencent.map.qywxgeolocation.TencentLocationListener",
                         new RC_MethodHook() {
                             @Override
                             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
