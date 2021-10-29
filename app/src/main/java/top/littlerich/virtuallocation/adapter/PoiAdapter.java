@@ -48,7 +48,10 @@ public class PoiAdapter extends RecyclerView.Adapter<PoiAdapter.ViewHolder> {
         holder.tx_name.setText(myAppInfo.name);
         holder.tx_addr.setText(myAppInfo.getAddress());
         LatLng location = myAppInfo.getLocation();
-        String latLngStr = location.latitude + "," + location.longitude;
+        String latLngStr = "";
+        if (location != null) {
+            latLngStr = location.latitude + "," + location.longitude;
+        }
         holder.tx_lat_lng.setText(latLngStr);
         holder.myPoiInfo = myAppInfo;
 

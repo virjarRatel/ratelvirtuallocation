@@ -16,6 +16,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
@@ -107,15 +108,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private ImageView mStopMock;
 
     private LinearLayout poiSearchContainer;
-    private Button poiSearchCancelBtn;
-    //private ImageView poiSearchCancelImage;
+    private ImageView poiSearchCancelBtn;
     private EditText poiSearchEditText;
     private static PoiSearch mPoiSearch;
-    private Button poiSearchChangeCityBtn;
-    private TextView poiSearchCityTextView;
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private PoiAdapter mPoiAdapter;
+
 
     @Override
     protected Object getContentViewId() {
@@ -183,10 +182,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mLocClient = new LocationClient(this);
 
         poiSearchContainer = findViewById(R.id.poi_search);
-        poiSearchCancelBtn = findViewById(R.id.poi_search_btn_cancel);
         poiSearchEditText = findViewById(R.id.poi_search_edit);
-        poiSearchChangeCityBtn = findViewById(R.id.poi_search_change_city_btn);
-        poiSearchCityTextView = findViewById(R.id.poi_search_city);
         //poiSearchCancelImage = findViewById(R.id.poi_search_img_cancel);
         //创建默认的线性LayoutManager
         mRecyclerView = findViewById(R.id.poi_search_recycler_view);
@@ -205,6 +201,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             }
         });
         mRecyclerView.setAdapter(mPoiAdapter);
+
+
+        poiSearchContainer = findViewById(R.id.poi_search);
+        poiSearchEditText = findViewById(R.id.poi_search_edit);
+        poiSearchCancelBtn = findViewById(R.id.poi_search_btn_cancel);
+        mRecyclerView = findViewById(R.id.poi_search_recycler_view);
+
 
     }
 
@@ -291,7 +294,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             }
         };
         poiSearchCancelBtn.setOnClickListener(cancelPoiSearch);
-        // poiSearchCancelImage.setOnClickListener(cancelPoiSearch);
 
         poiSearchEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -306,7 +308,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                beginSearch(editable);
+                beginSearch(editable.toString());
             }
         });
 
@@ -335,14 +337,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             @Override
             public void onGetPoiIndoorResult(PoiIndoorResult poiIndoorResult) {
 
-            }
-        });
-
-        poiSearchChangeCityBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, CityListSelectActivity.class);
-                startActivityForResult(intent, CityListSelectActivity.CITY_SELECT_RESULT_FRAG);
             }
         });
 
@@ -525,8 +519,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 if (null == cityInfoBean) {
                     return;
                 }
-                poiSearchCityTextView.setText(cityInfoBean.getName());
-                beginSearch(poiSearchEditText.getText());
+                beginSearch(poiSearchEditText.getText().toString());
             }
         } else if (requestCode == PreciseLocationActivity.PRECISE_LOCATION_RESULT_FLAG) {
             if (data == null) {
@@ -546,15 +539,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
-    private void beginSearch(Editable editable) {
-        String keywords = editable.toString();
-        if (TextUtils.isEmpty(keywords)) {
+    private void beginSearch(String keyword) {
+        if (TextUtils.isEmpty(keyword)) {
             mPoiAdapter.setData(new ArrayList<PoiInfo>());
-            //Toast.makeText(MainActivity.this, "请输入关键词", Toast.LENGTH_SHORT).show();
             return;
         }
-        mPoiSearch.searchInCity(new PoiCitySearchOption().city(poiSearchCityTextView.getText().toString())
-                .keyword(editable.toString())
+        Log.i(AppApplication.tag, "beginSearch: " + keyword);
+        mPoiSearch.searchInCity(new PoiCitySearchOption()
+                .cityLimit(false)
+                .city("北京")
+                .keyword(keyword)
         );
     }
 }

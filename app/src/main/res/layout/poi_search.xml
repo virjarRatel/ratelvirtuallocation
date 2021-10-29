@@ -1,71 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:custom="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#DDFFFFFF"
     android:orientation="vertical">
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/poi_search_change_city_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#FF9999"
-            android:padding="10dp"
-            android:text="城市(点我修改):"
-            android:textSize="18dp" />
-
-        <TextView
-            android:id="@+id/poi_search_city"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:text="北京"
-            android:textSize="24dp" />
-    </LinearLayout>
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <Button
-            android:id="@+id/poi_search_btn_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:text="取消" />
-
-
-        <LinearLayout
+        <android.support.v7.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toStartOf="@id/poi_search_btn_cancel"
-            android:orientation="horizontal">
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="8dp"
+            app:cardPreventCornerOverlap="false"
+            app:cardUseCompatPadding="true">
 
-
-            <TextView
-                android:id="@+id/poi_search_lab_key"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="关键词" />
-
-
-            <EditText
-                android:id="@+id/poi_search_edit"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints="请输入关键词"
-                android:inputType="text"
-                android:labelFor="@id/poi_search_lab_key" />
-        </LinearLayout>
+                android:layout_centerVertical="true"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:src="@mipmap/ic_topbar_search" />
+
+                <EditText
+                    android:id="@+id/poi_search_edit"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:autofillHints="请输入关键词"
+                    android:inputType="text" />
+
+                <ImageView
+                    android:id="@+id/poi_search_btn_cancel"
+                    android:layout_width="22dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="10dp"
+                    android:src="@mipmap/ic_back" />
+
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
 
 
     </RelativeLayout>
@@ -82,14 +67,12 @@
             android:scrollbars="vertical" />
 
         <ProgressBar
-
             android:id="@+id/pid_search_pb_progressbar"
             android:layout_width="65dp"
             android:layout_height="65dp"
             android:layout_centerInParent="true"
             android:indeterminateDrawable="@drawable/bg_progressbar"
             android:visibility="gone" />
-        />
     </RelativeLayout>
 
 
