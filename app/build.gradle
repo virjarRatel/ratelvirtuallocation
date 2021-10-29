@@ -8,8 +8,8 @@ android {
         applicationId "com.virjar.ratel.virtuallocation"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 20210607
-        versionName "v1.6"
+        versionCode 20211029
+        versionName "v1.7"
         archivesBaseName = "JDY_${versionName}".replace(' ', '_')
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a"//, "x86","arm64-v8a","x86_64"
